@@ -91,7 +91,7 @@ macro_rules! Wrap {
 				for (id, wrapper) in wrappers.iter_mut() {
 					#[cfg(feature = "tracing")]
 					::tracing::debug!(?id, "post_spawn");
-					wrapper.post_spawn(&mut child, self)?;
+					wrapper.post_spawn(command, &mut child, self)?;
 				}
 
 				let mut child = Box::new(
@@ -204,7 +204,7 @@ macro_rules! Wrap {
 			/// how `CreationFlags` on Windows works along with `JobObject`.
 			///
 			/// Default: no-op.
-			fn post_spawn(&mut self, _child: &mut $child, _core: &$name) -> Result<()> {
+			fn post_spawn(&mut self, _command: &mut $command, _child: &mut $child, _core: &$name) -> Result<()> {
 				Ok(())
 			}
 
@@ -230,20 +230,4 @@ macro_rules! Wrap {
 	};
 }
 
-macro_rules! MaybeAnyTrait {
-	(
-		$(#[$($attrss:tt)*])*
-		$v:vis trait $name:ident $body:tt
-	) => {
-		#[cfg(feature = "downcasting")]
-		$(#[$($attrss)*])*
-		$v trait $name: std::fmt::Debug + Send + Sync + std::any::Any $body
-
-		#[cfg(not(feature = "downcasting"))]
-		$(#[$($attrss)*])*
-		$v trait $name: std::fmt::Debug + Send + Sync $body
-	}
-}
-
-pub(crate) use MaybeAnyTrait;
 pub(crate) use Wrap;
